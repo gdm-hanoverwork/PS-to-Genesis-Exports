@@ -1,0 +1,177 @@
+<queries>
+    <query name="com.github.gdm-hanoverwork.genesis.curriculum" flattened="true">
+		<summary>Genesis CURRICULUM</summary>
+		<args>
+			<arg name="terms_start" description="Start Term YearID" />
+			<arg name="terms_end" description="End Term YearID" />
+		</args>
+		<columns>
+			<column column="COURSES.COURSE_NAME">SCHOOL_YEAR</column>
+			<column column="SCHOOLS.ABBREVIATION">SCHOOL_CODE</column>
+			<column column="COURSES.COURSE_NAME">COURSE CODE</column>
+			<column column="COURSES.COURSE_NAME">Course Description</column>
+			<column column="COURSES.COURSE_NAME">Department Code</column>
+			<column column="COURSES.COURSE_NAME">Maximum Seats</column>
+			<column column="COURSES.COURSE_NAME">Credit</column>
+			<column column="COURSES.COURSE_NAME">ATTENDANCE TAKEN</column>
+			<column column="COURSES.COURSE_NAME">GRADED COURSE</column>
+			<column column="COURSES.COURSE_NAME">INCLUDE IN HONOR_ROLL</column>
+			<column column="COURSES.COURSE_NAME">INCLUDE IN GPA</column>
+			<column column="COURSES.COURSE_NAME">GPA WEIGHT CODE</column>
+			<column column="COURSES.COURSE_NAME">GPA WEIGHT</column>
+			<column column="COURSES.COURSE_NAME">INCLUDE ON TRANSCRIPT</column>
+			<column column="COURSES.COURSE_NAME">ADVANCED PLACEMENT COURSE</column>
+			<column column="COURSES.COURSE_NAME">COLLEGE PREP COURSE</column>
+			<column column="COURSES.COURSE_NAME">HONORS COURSE</column>
+			<column column="COURSES.COURSE_NAME">ADVANCED LEVEL</column>
+			<column column="COURSES.COURSE_NAME">ACCELERATED</column>
+			<column column="COURSES.COURSE_NAME">ELEMENTARY COURSE</column>
+			<column column="COURSES.COURSE_NAME">STUDY HALL FLAG</column>
+			<column column="COURSES.COURSE_NAME">LUNCH FLAG</column>
+			<column column="COURSES.COURSE_NAME">SPECIAL ED COURSE</column>
+			<column column="COURSES.COURSE_NAME">PRE_REQUISITES</column>
+			<column column="COURSES.COURSE_NAME">TECH_PREP</column>
+			<column column="COURSES.COURSE_NAME">NCAA CORE COURSE</column>
+			<column column="COURSES.COURSE_NAME">PRIMARY_SUBJECT_AREA_CODE</column>
+			<column column="COURSES.COURSE_NAME">SCED COURSE CODE</column>
+			<column column="COURSES.COURSE_NAME">SCED COURSE LEVEL</column>
+			<column column="COURSES.COURSE_NAME">SCED SEQUENCE</column>
+			<column column="COURSES.COURSE_NAME">SCED GRADE SPAN</column>
+		</columns>
+		<sql>
+			<![CDATA[
+SELECT 
+	/* [1] SCHOOL_YEAR: Required '20xx-yy' format. Update this value. */
+	'20'||terms.abbreviation AS "SCHOOL_YEAR",
+	/* [2] SCHOOL_CODE: Uses the School Abbreviation (e.g., 'CHS').  */
+	/* Ensure this matches your Genesis School Code exactly. */
+	S.Abbreviation AS "SCHOOL_CODE",
+	/* [3] COURSE CODE: Max 12 chars, Alphanumeric only (No special chars). */
+	/* This strips out dashes/dots/spaces to satisfy the strict validation rule. */
+	SUBSTR(
+		REGEXP_REPLACE(Courses.Course_Number, '[^a-zA-Z0-9]', ''),
+		1,
+		12
+	) AS "COURSE CODE",
+	/* [4] Course Description: Max 35 characters (Truncated). */
+	SUBSTR(Courses.Course_Name, 1, 35) AS "Course Description",
+	/* [5] Department Code: Uses PS Scheduling Department. */
+	Courses.Sched_Department AS "Department Code",
+	/* [6] Maximum Seats: Defaults to 25 if blank. */
+	NVL(Courses.Sched_MaximumEnrollment, 25) AS "Maximum Seats",
+	/* [7] Credit: Credits value. */
+	Courses.Credit_Hours AS "Credit",
+	/* [8] ATTENDANCE TAKEN: 'Y' unless excluded from ADA in PS. */
+	CASE
+		WHEN Courses.Exclude_ADA = 1 THEN 'Y'
+		ELSE 'N'
+	END AS "ATTENDANCE TAKEN",
+	/* [9] GRADED COURSE: 'Y' unless excluded from grading. */
+	CASE
+		WHEN Courses.ExcludeFromStoredGrades = 1 THEN 'Y'
+		ELSE 'N'
+	END AS "GRADED COURSE",
+	/* [10] INCLUDE IN HONOR_ROLL: 'Y' unless excluded from class rank. */
+	CASE
+		WHEN Courses.ExcludeFromClassRank = 1 THEN 'Y'
+		ELSE 'N'
+	END AS "INCLUDE IN HONOR_ROLL",
+	/* [11] INCLUDE IN GPA: 'Y' unless excluded from GPA. */
+	CASE
+		WHEN Courses.ExcludeFromGPA = 0 THEN 'Y'
+		ELSE 'N'
+	END AS "INCLUDE IN GPA",
+	/* [12] GPA WEIGHT CODE: Checks for 'Added Value'. */
+	/* Returns 'ADD' if value exists, otherwise null/blank. */
+	CASE
+		WHEN Courses.GPA_AddedValue > 0 THEN 'ADD'
+		ELSE ''
+	END AS "GPA WEIGHT CODE",
+	/* [13] GPA WEIGHT: The actual weight value. */
+	NVL(Courses.GPA_AddedValue, 0) AS "GPA WEIGHT",
+	/* [14] INCLUDE ON TRANSCRIPT: 'Y' unless excluded from stored grades. */
+	CASE
+		WHEN Courses.ExcludeFromStoredGrades = 1 THEN 'Y'
+		ELSE 'N'
+	END AS "INCLUDE ON TRANSCRIPT",
+	/* [15-20] COURSE TYPE FLAGS */
+	/* Logic looks for keywords in the Course Name.  */
+	/* REPLACE these lines if you have specific custom fields (e.g., U_DEF_EXT_COURSES.IS_AP). */
+	CASE
+		WHEN UPPER(Courses.Course_Name) LIKE '%AP %'
+		OR UPPER(Courses.Course_Name) LIKE '%ADVANCED PLACEMENT%' THEN 'Y'
+		ELSE 'N'
+	END AS "ADVANCED PLACEMENT COURSE",
+	CASE
+		WHEN UPPER(Courses.Course_Name) LIKE '%CP %'
+		OR UPPER(Courses.Course_Name) LIKE '%COLLEGE PREP%' THEN 'Y'
+		ELSE 'N'
+	END AS "COLLEGE PREP COURSE",
+	CASE
+		WHEN UPPER(Courses.Course_Name) LIKE '%HON%'
+		OR UPPER(Courses.Course_Name) LIKE '%HONORS%' THEN 'Y'
+		ELSE 'N'
+	END AS "HONORS COURSE",
+	'N' AS "ADVANCED LEVEL",
+	/* Placeholder (Update if tracked in PS) */
+	'N' AS "ACCELERATED",
+	/* Placeholder (Update if tracked in PS) */
+	CASE
+		WHEN S.Abbreviation = 'MJS'
+		THEN 'Y'
+		ELSE 'N'
+	END AS "ELEMENTARY COURSE",
+	/* Placeholder */
+	/* [21-22] LOGISTICS FLAGS */
+	CASE
+		WHEN UPPER(Courses.Course_Name) LIKE '%STUDY%' THEN 'Y'
+		ELSE 'N'
+	END AS "STUDY HALL FLAG",
+	CASE
+		WHEN UPPER(Courses.Course_Name) LIKE '%LUNCH%' THEN 'Y'
+		ELSE 'N'
+	END AS "LUNCH FLAG",
+	/* [23] SPECIAL ED: Checks for 'Resource' or 'ICS' in name. */
+	CASE
+		WHEN UPPER(Courses.Course_Name) LIKE '%RESOURCE%'
+		OR UPPER(Courses.Course_Name) LIKE '%ICS%' THEN 'Y'
+		ELSE 'N'
+	END AS "SPECIAL ED COURSE",
+	/* [24-26] OTHER FLAGS */
+	'N' AS "PRE_REQUISITES",
+	'N' AS "TECH_PREP",
+	'N' AS "NCAA CORE COURSE",
+	/* Often tracked in S_NJ_CRS_X, but mapped to 'N' here for safety. */
+	/* [27] PRIMARY_SUBJECT_AREA_CODE: Mapping Department Code again as fallback. */
+	Courses.Sched_Department AS "PRIMARY_SUBJECT_AREA_CODE",
+	/* [28-31] SCED / NJ SMART DATA */
+	/* Pulls from the Standard NJ State Extension table. */
+	S_NJ_CRS_X.nces_subject_area || S_NJ_CRS_X.nces_course_id AS "SCED COURSE CODE",
+	S_NJ_CRS_X.Course_Level AS "SCED COURSE LEVEL",
+	S_NJ_CRS_X.course_Sequence_code AS "SCED SEQUENCE",
+	S_NJ_CRS_X.course_Span AS "SCED GRADE SPAN"
+FROM
+	Courses Courses
+	JOIN Schools S ON Courses.SchoolID = S.School_Number 
+	/* Left Join to NJ State Extension table for SCED codes */
+	LEFT JOIN S_NJ_CRS_X S_NJ_CRS_X ON Courses.DCID = S_NJ_CRS_X.CoursesDCID
+	inner JOIN terms ON ( terms.schoolid = Courses.Schoolid and coalesce(terms.isyearrec,0) = 1 and (terms.yearid between :terms_start and :terms_end ) )
+	/* inner join cc on (cc.course_number = courses.course_number and cc.termid = terms.id and cc.schoolid = courses.schoolid) */ 
+where 
+	EXISTS (
+				SELECT
+					1
+				FROM
+					CC
+				WHERE
+					CC.course_number = courses.course_number 
+					AND cc.termid = terms.id 
+					and cc.schoolid = Courses.schoolid
+			)
+	
+ORDER BY
+	terms.abbreviation asc, Courses.Course_Number
+			]]>
+		</sql>
+	</query>
+</queries>

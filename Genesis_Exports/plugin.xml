@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://plugin.powerschool.pearson.com"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		description="Genesis PowerQueries"
+		name="Genesis PowerQuerys"
+		version="2026.02.11.05"
+		xsi:schemaLocation="http://plugin.powerschool.pearson.com plugin.xsd">
+	<oauth accessLevelV1Api="READ"/>
+<access_request>
+	<field table="cc" field="schoolid" access="ViewOnly" />
+	<field table="cc" field="termid" access="ViewOnly" />
+	<field table="Courses" field="Course_Number" access="ViewOnly" />
+	<field table="Courses" field="Credit_Hours" access="ViewOnly" />
+	<field table="Courses" field="Exclude_ADA" access="ViewOnly" />
+	<field table="Courses" field="ExcludeFromClassRank" access="ViewOnly" />
+	<field table="Courses" field="ExcludeFromGPA" access="ViewOnly" />
+	<field table="Courses" field="ExcludeFromStoredGrades" access="ViewOnly" />
+	<field table="Courses" field="GPA_AddedValue" access="ViewOnly" />
+	<field table="Courses" field="Sched_Department" access="ViewOnly" />
+	<field table="Courses" field="SchoolID" access="ViewOnly" />
+	<field table="S_NJ_CRS_X" field="Course_Level" access="ViewOnly" />
+	<field table="S_NJ_CRS_X" field="course_Sequence_code" access="ViewOnly" />
+	<field table="S_NJ_CRS_X" field="course_Span" access="ViewOnly" />
+	<field table="S_NJ_CRS_X" field="nces_course_id" access="ViewOnly" />
+	<field table="S_NJ_CRS_X" field="nces_subject_area" access="ViewOnly" />
+	<field table="Schools" field="Abbreviation" access="ViewOnly" />
+	<field table="Schools" field="School_Number" access="ViewOnly" />
+	<field table="terms" field="abbreviation" access="ViewOnly" />
+	<field table="terms" field="id" access="ViewOnly" />
+	<field table="terms" field="schoolid" access="ViewOnly" />
+	<field table="CC" field="course_number" access="ViewOnly" />
+	<field table="Courses" field="Course_Name" access="ViewOnly" />
+	<field table="Courses" field="Sched_MaximumEnrollment" access="ViewOnly" />
+	<field table="terms" field="isYearRec" access="ViewOnly"	/>
+	<field table="terms" field="yearid" access="ViewOnly" />
+	<field table="S_NJ_CRS_X" field="CoursesDCID" access="ViewOnly" />
+	<field table="Courses" field="DCID" access="ViewOnly" />
+</access_request>
+	<publisher name="Greg Matyola">
+		<contact email="greg.matyola@hanovertwpschools.org"/>
+	</publisher>
+</plugin>
